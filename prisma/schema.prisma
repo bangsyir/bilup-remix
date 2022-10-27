@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  cuid       String    @unique @default(cuid())
+  name       String
+  username   String
+  email      String
+  image      String?
+  isVerify   Boolean   @default(false)
+  verifyDate DateTime?
+  role       String    @default("user")
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @db.Timestamptz(3)
+  company    Company?
+  password   Password?
+}
+
+model Password {
+  id     Int    @id @default(autoincrement())
+  hash   String
+  userId Int?   @unique
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Company {
+  id             Int      @id @default(autoincrement())
+  cuid           String   @unique @default(cuid())
+  name           String
+  registerNumber String
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
+  address        Address?
+  userId         Int      @unique
+  user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Address {
+  id         Int         @id @default(autoincrement())
+  address1   String
+  address2   String?
+  city       String
+  state      String
+  postcode   String
+  country    String
+  coordinate Coordinate?
+  companyId  Int         @unique
+  company    Company?    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model Coordinate {
+  id        Int      @id @default(autoincrement())
+  lat       String
+  lon       String
+  addressId Int      @unique
+  address   Address? @relation(fields: [addressId], references: [id], onDelete: Cascade)
+}
